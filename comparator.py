@@ -41,15 +41,17 @@ class Comparator():
         else:
             sample = self.datasets[df_name].sample(sample_len)
 
-        # X = sample.drop([self.target, 'Unnamed: 0'], axis=1)
-        X = sample.drop([self.target], axis=1)
+        X = sample.drop([self.target, 'Unnamed: 0'], axis=1)
+        # X = sample.drop([self.target], axis=1)
         Y = sample[self.target]
 
         s = cross_validate(clf, X, Y, scoring=['roc_auc'], cv=cv, n_jobs=-1)
 
-        # if isinstance(clf, RandomForestClassifier):
-        #     clf.fit(X, Y)
-        #     s['oob'] = clf.oob_score_
+        # clf.fit(X, Y)
+        # importances = clf.feature_importances_
+        # indices = np.argsort(importances)[::-1]
+        # for f in range(X.shape[1]):
+        #     print("%2d) %-*s %f" % (f + 1, 30, X.columns.values[indices[f]], importances[indices[f]]))
         # self.cache[(m_name, df_name, sample_len, cv)] = s
 
         return s
