@@ -20,10 +20,10 @@ competition地址：<https://www.kaggle.com/c/GiveMeSomeCredit/overview>
     
 
 
-##具体内容
+## 具体内容
 
-###一、数据探索
-###二、调参
-###三、模型对比
-###四、展望
+### 一、数据探索
+### 二、调参
+### 三、模型对比
+### 四、展望
 
