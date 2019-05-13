@@ -1,22 +1,27 @@
 # trying-on-machine-learning报告
 
-
-
 ## 综述：
 尝试探索kaggle网站上信用卡用户分类的competition([详情链接](https://www.kaggle.com/c/GiveMeSomeCredit/overview))，进行数据探索-数据清洗-模型训练-模型评估等一系列操作。内容主要包括：
 
 
 #### 1. 数据探索：
-- 处理空值。分析空值占比，占比极少的直接删除，较多的进行填充。
-- 处理离群点。通过箱型图+knn找出可能的异常值。
+- 空值。
 
-对第二步中找出的异常值分别处理，处理后的数据为数据集1-5。使用模型分别训练数据集1-5，对比评估，从而选出合适的数据处理方式，用于接下来的模型训练。
+    分析空值占比，占比极少的直接删除，较多的进行填充。
+    
+- 离群点
+
+    通过箱型图+knn找出可能的异常值。对第二步中找出的异常值分别处理，处理后的数据为数据集1-5。使用模型分别训练数据集1-5，对比评估，从而选出合适的数据处理方式，用于接下来的模型训练。
 
 #### 2. 模型训练：
+
 - 分别对随机森林和GBDT进行调参，考虑ROC-AOC、速度、是否过拟合，从而找出较好的参数。
 - 从预测准确性、抗噪声能力等方面对两种模型进行对比。
 
-#### 3. 结果：
+#### 3. 思考
+
+
+#### 4. 结果：
 将测试数据分测试集和验证集，交叉验证AUC-ROC。较好的结果如下（具体参数见文章第二部分）：
 
 | 模型 | mean | std|
@@ -40,7 +45,11 @@
 ## 具体处理和数据支撑
 
 ### 一、数据探索
-1. 空值
+1. 数据描述
+
+    维数
+
+2. 空值
 
 |  列名     |缺失值占比|
 | ------ | ------ | 
@@ -101,17 +110,17 @@
 - RF调参相对简单
 - GBDT正确率更高
 
-4. 思考
+## 其他一些思考
 
-    a. 两者思路上的不同
+1. 两者思路上的不同
 
-    GBDT ：use shallow tree （ weak learners，high bias, low variance） +  gradient提高bias
+    GBDT：shallow trees （ weak learners，high bias, low variance） +  gradient 提高bias
 
-    RF：fully grown decision trees（low bias, high variance） + bagging 提高variance
+    RF：fully grown trees（low bias, high variance） + bagging 提高variance
 
-    b. 本文以外的思考：
+2. 本文以外的思考
 
-    c. 关于正确率评判方式的思考
+3. 关于正确率评判方式的思考
 
-    d. 阈值探索
+4. 阈值探索
 
