@@ -58,8 +58,8 @@
 1. 数据描述
 
     共11维数据，describe看一下大致情况。
-    
-    |           |  SeriousDlqin2yrs | Revolving<br>Utilization<br>OfUnsecuredLines  |age | NumberOfTime<br>30-59Days<br>PastDueNotWorse    |  DebtRatio | MonthlyIncome | NumberOfOpen<br>CreditLines<br>AndLoans|NumberOfTimes<br>90DaysLate  |NumberRealEstate<br>LoansOrLines|NumberOfTime<br>60-89Days<br>PastDueNotWorse | NumberOfDependents  |
+
+|           |  SeriousDlqin2yrs | Revolving<br>Utilization<br>OfUnsecuredLines  |age | NumberOfTime<br>30-59Days<br>PastDueNotWorse    |  DebtRatio | MonthlyIncome | NumberOfOpen<br>CreditLines<br>AndLoans|NumberOfTimes<br>90DaysLate  |NumberRealEstate<br>LoansOrLines|NumberOfTime<br>60-89Days<br>PastDueNotWorse | NumberOfDependents  |
 | ------ | ------ | ------ | ----- | ---------| -----------|------|-------|------|--------|----|-----|
 |count  |150000.000000  |150000.000000 |  150000.000000     |  150000.000000 | 150000.000000  |  1.202690e+05     |        150000.000000  | 150000.000000              |   150000.000000 | 150000.000000  |     146076.000000 | 
 |mean  |    0.066840 |    6.048438  |  52.295207     |    0.421033    | 353.005076   |   6.670221e+03        |                 8.452760   |0.265973              |        1.018240  |  0.240387     |       0.757222  |
@@ -69,6 +69,8 @@
 |50%     | 0.000000     | 0.154181   | 52.000000     |          0.000000    |   0.366508    5.400000e+03     |                    8.000000 | 0.000000          |            1.000000 | 0.000000 |           0.000000  |
 |75%   | 0.000000   | 0.559046   |63.000000          |    0.000000  |     0.868254   |  8.249000e+03  |                      11.000000  |0.000000            |          2.000000   | 0.000000    |        1.000000  |
 |max    |1.000000    |50708.000000   |109.000000       |  98.000000  |329664.000000 |  3.008750e+06         |               58.000000 | 98.000000            |         54.000000|    98.000000   |        20.000000  |
+
+
 
 2. 空值
 
@@ -89,9 +91,6 @@
 2. 离群点
 
 ![avatar](https://github.com/IggyGao/trying-on-machine-learning/blob/master/pictures/overview.png?raw=true)
-
-
-
 
 3. 引入模型评估
 - 评估处理方法
