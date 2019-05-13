@@ -1,7 +1,9 @@
 # trying-on-machine-learning报告
 
+
+
 ## 综述：
-尝试探索kaggle网站上信用卡用户分类的competition([地址链接](https://www.kaggle.com/c/GiveMeSomeCredit/overview))，进行数据探索-数据清洗-模型训练-模型评估等一系列操作。内容主要包括：
+尝试探索kaggle网站上信用卡用户分类的competition([详情链接](https://www.kaggle.com/c/GiveMeSomeCredit/overview))，进行数据探索-数据清洗-模型训练-模型评估等一系列操作。内容主要包括：
 
 
 #### 1. 数据探索：
@@ -35,7 +37,7 @@
     gbdt_tuning.py  ----------- GBDT调参  
    
 
-## 具体内容
+## 具体处理和数据支撑
 
 ### 一、数据探索
 1. 空值
@@ -76,12 +78,40 @@
 - 评估数据质量
 
 ### 二、模型探索
+
 1. Rondom Forest调参 
+    - n_estimators
+    - max_features
+    - max_depth、min_sample_leaf、min_samples_split
+    
 2. GBDT调参
+
+    a. boosting参数
+    - n_estimators和learning_rate
+    - subsample
+    - loss
+    
+    b. 弱学习器参数（同RF）
+  
+    
 3. 模型对比
 
-- 对比auc-roc（为什么用这个）
-- 加入离群点对比抗噪声能力
+- RF抗噪能力更强（加入离群点对比抗噪声能力）
+- RF训练速度更快，但是分类速度慢
+- RF调参相对简单
+- GBDT正确率更高
 
-4. 关于roc的思考。阈值探索。
+4. 思考
+
+    a. 两者思路上的不同
+
+    GBDT ：use shallow tree （ weak learners，high bias, low variance） +  gradient提高bias
+
+    RF：fully grown decision trees（low bias, high variance） + bagging 提高variance
+
+    b. 本文以外的思考：
+
+    c. 关于正确率评判方式的思考
+
+    d. 阈值探索
 
