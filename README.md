@@ -33,7 +33,7 @@
 
 使用对应模型对测试集进行分类，生成submission.csv提交，网站评分如下图
 
-<img src="https://github.com/IggyGao/trying-on-machine-learning/blob/master/pictures/my_score.png?raw=true" style="zoom:50%"/>
+<img src="https://github.com/IggyGao/trying-on-machine-learning/blob/master/pictures/my_score.png?raw=true" style="zoom:50%" />
 
 #### 5. 文件列表
 
