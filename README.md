@@ -1,5 +1,7 @@
 # trying-on-machine-learning报告
 
+目录?
+
 ## 综述：
 尝试探索kaggle网站上信用卡用户分类的competition([详情链接](https://www.kaggle.com/c/GiveMeSomeCredit/overview))，进行数据探索-数据清洗-模型训练-模型评估等一系列操作。内容主要包括：
 
@@ -29,12 +31,11 @@
 | RF | 0.8644 | 0.0015 |
 | GBDT | 0.8632 | 0.0011 |
 
-使用对应模型预测测试集，生成submission.csv提交，网站评分如下图
+使用对应模型对测试集进行分类，生成submission.csv提交，网站评分如下图
 
-![avatar](https://github.com/IggyGao/trying-on-machine-learning/blob/master/pictures/my_score.png?raw=true)
+<img src="https://github.com/IggyGao/trying-on-machine-learning/blob/master/pictures/my_score.png?raw=true" style="zoom:50%"/>
 
-
-文件列表
+#### 5. 文件列表
 
     comparator.py  ------------ 对比器，用于生成各模型/数据集的ROC列表和调参对比图
     data_explore.py  ---------- 数据清洗
@@ -81,10 +82,10 @@
 |max    |150000.000000          |1.000000                          |50708.000000   |
 
 
-
 3. 引入模型评估
 - 评估处理方法
 - 评估数据质量
+- 评估importance
 
 ### 二、模型探索
 
