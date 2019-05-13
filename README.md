@@ -17,27 +17,14 @@
 
 #### 2. 模型训练
 
-对比不同参数下模型的好坏，包括：分类的正确性（AUC_ROC）、速度、是否过拟合等，寻找到此数据集下两种模型较为合适的参数。
+对比不同参数下模型的好坏，包括：分类的正确性（AUC_ROC）、速度、是否过拟合等，寻找到此数据集下两种模型较为合适的参数。涉及参数如下：
 
-随机森林调参:
+| | 随机森林调参 | GBDT调参 | 
+|-------| ------ | ------ | 
+| Bagging相关参数|n_estimators<br>max_features|n_estimators和learning_rate<br>subsample<br>loss|
+| 学习器相关参数|max_depth<br>min_sample_leaf<br>min_samples_split|同随机森林|
 
-   - n_estimators
-   - max_features
-   - max_depth、min_sample_leaf、min_samples_split
-    
-GBDT调参:
-
-a. Boosting相关参数
-
-   - n_estimators和learning_rate
-   - subsample
-   - loss
-    
-b. 弱学习器参数
-    
-   - 同RF
-    
-模型对比：
+然后从以下反面对两个模型进行对比分析：
     
    - 抗噪能力
    - 训练速度、分类速度
@@ -54,8 +41,7 @@ b. 弱学习器参数
 
 使用对应模型对测试集进行分类，生成submission.csv提交，网站评分如下图
 
-<img src="https://github.com/IggyGao/trying-on-machine-learning/blob/master/pictures/my_score.png?raw=true" style="zoom:50%" />
-
+<img src="https://github.com/IggyGao/trying-on-machine-learning/blob/master/pictures/my_score.png?raw=true" width="60%" >
 
 #### 4. 延伸思考
 
