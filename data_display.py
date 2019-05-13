@@ -45,17 +45,17 @@ df1=df.dropna()
 
 # 2.异常值处理
 
-# print(df1[df1["好坏客户"] not in ["Y", "N"]].count())
-# print("RevolvingUtilizationOfUnsecuredLines异常：" + str(df[df["RevolvingUtilizationOfUnsecuredLines"] > 1].shape[0]/df.shape[0] *100))
-# print("age异常：" + str((df[df["age"] <= 0].shape[0] + df[df["age"] > 120].shape[0])/df.shape[0] *100))
-# print("NumberOfTime30-59DaysPastDueNotWorse异常：" + str(df[df["NumberOfTime30-59DaysPastDueNotWorse"] < 0].shape[0]/df.shape[0] *100))
-# print("DebtRatio：" + str(df[df["DebtRatio"] < 0].shape[0]/df.shape[0] *100))
-# print("MonthlyIncome异常：" + str(df[df["MonthlyIncome"] < 0].shape[0]/df.shape[0] *100))
-# print("信贷数量异常：" + str(df[df["信贷数量"] < 0].shape[0]/df.shape[0] *100))
-# print("逾期90天笔数异常：" + str(df[df["逾期90天笔数"] < 0].shape[0]/df.shape[0] *100))
-# print("固定资产贷款量异常：" + str(df[df["固定资产贷款量"] < 0].shape[0]/df.shape[0] *100))
-# print("逾期60-89天笔数异常："+ str(df[df["逾期60-89天笔数"] < 0].shape[0]/df.shape[0] *100))
-# print("家属数量异常：" + str(df[df["家属数量"] < 0].shape[0]/df.shape[0] *100))
+# print(df1[df1["SeriousDlqin2yrs"] not in ["Y", "N"]].count())
+print("RevolvingUtilizationOfUnsecuredLines异常：" + str(df[df["RevolvingUtilizationOfUnsecuredLines"] > 1].shape[0]/df.shape[0] *100))
+print("age异常：" + str((df[df["age"] <= 0].shape[0] + df[df["age"] > 120].shape[0])/df.shape[0] *100))
+print("NumberOfTime30-59DaysPastDueNotWorse异常：" + str(df[df["NumberOfTime30-59DaysPastDueNotWorse"] < 0].shape[0]/df.shape[0] *100))
+print("DebtRatio：" + str(df[df["DebtRatio"] < 0].shape[0]/df.shape[0] *100))
+print("MonthlyIncome异常：" + str(df[df["MonthlyIncome"] < 0].shape[0]/df.shape[0] *100))
+print("NumberOfOpenCreditLinesAndLoans异常：" + str(df[df["NumberOfOpenCreditLinesAndLoans"] < 0].shape[0]/df.shape[0] *100))
+print("NumberOfTimes90DaysLate：" + str(df[df["NumberOfTimes90DaysLate"] < 0].shape[0]/df.shape[0] *100))
+print("NumberRealEstateLoansOrLines：" + str(df[df["NumberRealEstateLoansOrLines"] < 0].shape[0]/df.shape[0] *100))
+print("NumberOfTime60-89DaysPastDueNotWorse："+ str(df[df["NumberOfTime60-89DaysPastDueNotWorse"] < 0].shape[0]/df.shape[0] *100))
+print("NumberOfDependents：" + str(df[df["NumberOfDependents"] < 0].shape[0]/df.shape[0] *100))
 
 # # 直接删除年龄和可用额度比值异常
 # df1=df1[df1["可用额度比值"]<=1]
@@ -84,46 +84,37 @@ plt.subplot(252)
 plt.title("age")
 plt.boxplot([df1["age"]])
 
-plt.subplot(253)
+plt.subplot(257)
 plt.title("NumberOfTime\n30-59DaysPastDueNotWorse")
 plt.boxplot([df1["NumberOfTime30-59DaysPastDueNotWorse"]])
 
-plt.subplot(254)
+plt.subplot(253)
 plt.title("DebtRatio")
 plt.boxplot([df1["DebtRatio"]])
 
-plt.subplot(255)
+plt.subplot(254)
 plt.title("MonthlyIncome")
 plt.boxplot([df1["MonthlyIncome"]])
 
-plt.subplot(256)
+plt.subplot(255)
 plt.title("NumberOf\nOpenCreditLinesAndLoans")
 plt.boxplot([df1["NumberOfOpenCreditLinesAndLoans"]])
 
-plt.subplot(257)
+plt.subplot(259)
 plt.title("NumberOfTimes\n90DaysLate")
 plt.boxplot([df1["NumberOfTimes90DaysLate"]])
 
-plt.subplot(258)
+plt.subplot(256)
 plt.title("NumberRealEstateLoansOrLines")
 plt.boxplot([df1["NumberRealEstateLoansOrLines"]])
 
-plt.subplot(259)
+plt.subplot(258)
 plt.title("NumberOfTime\n60-89DaysPastDueNotWorse")
 plt.boxplot([df1["NumberOfTime60-89DaysPastDueNotWorse"]])
 
 plt.subplot(2, 5, 10)
 plt.title("NumberOfDependents")
 plt.boxplot([df1["NumberOfDependents"]])
-
-
-# 以下为示例中删除的部分
-# df1=df1[df1["逾期30-59天笔数"]<80]
-# df1=df1[df1["固定资产贷款量"]<50]
-
-#  以下是我认为还应该删除部分？？？
-# df1 = df1[df1["逾期90天笔数"]<80]
-# # df1=df1[df1["固定资产贷款量"]<50]
 
 plt.show()
 
