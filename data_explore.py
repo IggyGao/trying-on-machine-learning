@@ -5,8 +5,48 @@ from sklearn.ensemble import GradientBoostingClassifier
 from sklearn import svm
 from comparator import Comparator
 
+pd.set_option('display.max_columns', None)
+
 #导入数据
 df = pd.read_csv(r"./data/cs-training.csv", engine="python")
+
+print(df["MonthlyIncome"].describe())
+
+mid = df["MonthlyIncome"].median()
+df.loc[(df.MonthlyIncome.isnull()), 'MonthlyIncome'] = mid
+
+# df = df.dropna()
+
+all = df.shape[0]
+print(df[(df['MonthlyIncome'] >= 0) & (df['MonthlyIncome'] < 2000)].shape[0]/all * 100)
+print(df[(df['MonthlyIncome'] >= 2000) & (df['MonthlyIncome'] < 3000)].shape[0]/all * 100)
+print(df[(df['MonthlyIncome'] >= 3000) & (df['MonthlyIncome'] < 4000)].shape[0]/all * 100)
+print(df[(df['MonthlyIncome'] >= 4000) & (df['MonthlyIncome'] < 5000)].shape[0]/all * 100)
+print(df[(df['MonthlyIncome'] >= 5000) & (df['MonthlyIncome'] < 6000)].shape[0]/all * 100)
+print(df[(df['MonthlyIncome'] >= 6000) & (df['MonthlyIncome'] < 7000)].shape[0]/all * 100)
+print(df[(df['MonthlyIncome'] >= 7000) & (df['MonthlyIncome'] < 9000)].shape[0]/all * 100)
+print(df[(df['MonthlyIncome'] >= 9000) & (df['MonthlyIncome'] < 12000)].shape[0]/all * 100)
+print(df[df['MonthlyIncome'] >= 12000].shape[0]/all*100)
+
+
+income_iv = df.copy()
+
+income_iv.loc[(df['MonthlyIncome'] >= 0) & (df['MonthlyIncome'] < 2000), 'MonthlyIncome'] = 0
+income_iv.loc[(df['MonthlyIncome'] >= 2000) & (df['MonthlyIncome'] < 3000), 'MonthlyIncome'] = 2000
+income_iv.loc[(df['MonthlyIncome'] >= 3000) & (df['MonthlyIncome'] < 4000), 'MonthlyIncome'] = 3000
+income_iv.loc[(df['MonthlyIncome'] >= 4000) & (df['MonthlyIncome'] < 5000), 'MonthlyIncome'] = 4000
+income_iv.loc[(df['MonthlyIncome'] >= 5000) & (df['MonthlyIncome'] < 6000), 'MonthlyIncome'] = 5000
+income_iv.loc[(df['MonthlyIncome'] >= 6000) & (df['MonthlyIncome'] < 7000), 'MonthlyIncome'] = 6000
+income_iv.loc[(df['MonthlyIncome'] >= 7000) & (df['MonthlyIncome'] < 9000), 'MonthlyIncome'] = 7000
+income_iv.loc[(df['MonthlyIncome'] >= 9000) & (df['MonthlyIncome'] < 12000), 'MonthlyIncome'] = 9000
+income_iv.loc[df['MonthlyIncome'] >= 12000, 'MonthlyIncome'] = 12000
+
+
+iv, data = calc_iv(income_iv, 'MonthlyIncome', 'SeriousDlqin2yrs', pr=True)
+
+
+# 缺失量接近20%，考虑直接删除MonthlyIncome维度
+drop_income = df.drop(["MonthlyIncome"], axis=1)
 
 # 用中位数填充MonthlyIncome的空值
 mid = df["MonthlyIncome"].median()
@@ -14,14 +54,16 @@ df.loc[(df.MonthlyIncome.isnull()), 'MonthlyIncome'] = mid
 
 # 删除比较少的缺失值
 df = df.dropna()
+drop_income = drop_income.dropna()
 
 # 删除重复项
 df = df.drop_duplicates()
+drop_income.dropna()
 
-# 1.删除DebtRatio 异常值
+# 1.删除DebtRatio异常值
 removed_debt_outliers1 = df.drop(df[df['DebtRatio'] > 3489.025].index)
 
-# 1.替换DebtRatio和MonthlyIncome的异常值
+# 1.99分位点替换DebtRatio和MonthlyIncome的异常值
 repalace_income = df.copy()
 repalace_income.loc[repalace_income['MonthlyIncome'] <= 1, 'MonthlyIncome'] = mid
 debt_mid = df["DebtRatio"].median()
