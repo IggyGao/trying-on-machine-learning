@@ -18,20 +18,19 @@ paras = {}
 n_estimators = [30, 90, 120, 150, 180, 210, 240, 270, 290, 320]
 learning_rate = np.linspace(0.03, 0.1, 8, endpoint=True)
 
-
 max_depth = [1, 2, 3, 4, 5, 6, 7, 8]
-subsample = np.linspace(0.5, 1, 6, endpoint=True)
+subsample = np.linspace(0.5, 1, 10, endpoint=True)
 min_samples_split = np.linspace(750, 1500, 10, endpoint=True)
 max_features = ['auto', 'sqrt', 'log2']
 loss = ['deviance', 'exponential']
-min_samples_leafs = np.linspace(1, 1500, 10, endpoint=True)
+min_samples_leaf = np.linspace(1, 1500, 15, endpoint=True)
 
 paras["n_estimators"] = n_estimators
 paras["learning_rate"] = learning_rate
 paras["max_depth"] = max_depth
 paras["max_features"] = max_features
 paras["min_samples_split"] = min_samples_split
-paras["min_samples_leafs"] = min_samples_leafs
+paras["min_samples_leaf"] = min_samples_leaf
 paras["loss"] = loss
 paras["subsample"] = subsample
 
@@ -40,17 +39,11 @@ comparator = Comparator('SeriousDlqin2yrs')
 df = pd.read_csv(r"./data/processed_data.csv", engine="python")
 comparator.addDataset('processed_data', df)
 
-to_tuning = 'max_depth'
-comparator.addModel("1", GradientBoostingClassifier(n_estimators=240, learning_rate=0.06, subsample=0.8, max_depth=5, min_samples_split=1000))
-comparator.addModel("2", GradientBoostingClassifier(n_estimators=240, learning_rate=0.1, subsample=0.8, max_depth=5, min_samples_split=1000))
-comparator.addModel("3", GradientBoostingClassifier(n_estimators=240, learning_rate=0.1, subsample=0.8, max_depth=5, min_samples_split=1000))
-comparator.addModel("4", GradientBoostingClassifier(n_estimators=240, learning_rate=0.05, subsample=0.8, max_depth=6, min_samples_split=1500))
-comparator.addModel("5", GradientBoostingClassifier(n_estimators=240, learning_rate=0.1, subsample=0.8, max_depth=6, min_samples_split=1500))
-comparator.runTests()
+to_tuning = 'loss'
 
 # rfc = []
 # for i in range(0, len(paras[to_tuning])):
-#     rfc.append(GradientBoostingClassifier(n_estimators=100, learning_rate=0.1, subsample=0.8, max_depth=max_depth[i], min_samples_split=750))
+#     rfc.append(GradientBoostingClassifier(n_estimators=200, learning_rate=0.08, subsample=0.85, max_depth=5, min_samples_leaf=550, loss = loss[i]))
 #     comparator.addModel(i, rfc[i])
 # test_auc, train_auc, time_spent = comparator.runTests()
 # line1, = plt.plot(paras[to_tuning], train_auc, 'b', label='Train AUC')
@@ -58,8 +51,10 @@ comparator.runTests()
 # plt.legend(handler_map={line1: HandlerLine2D(numpoints=2)})
 # plt.ylabel('AUC score')
 # plt.xlabel(to_tuning)
-# plt.ylim([0.845, 0.875])
+# plt.ylim([0.845, 0.9])
+#
 # plt.show()
+
 
 for j in range(0, len(learning_rate)):
     rfc = []
@@ -70,11 +65,11 @@ for j in range(0, len(learning_rate)):
     to_tuning = 'n_estimators'
 
     for i in range(0, len(paras[to_tuning])):
-        rfc.append(GradientBoostingClassifier(n_estimators=n_estimators[i], learning_rate=learning_rate[j], subsample=0.8, max_depth=6, min_samples_split=1500))
+        rfc.append(GradientBoostingClassifier(n_estimators=n_estimators[i], learning_rate=learning_rate[j], subsample=0.85, max_depth=5, min_samples_leaf=550))
         comparator.addModel(i, rfc[i])
     test_auc, train_auc, time_spent = comparator.runTests()
     plt.subplot(len(learning_rate)/2, 2, j+1)
-    plt.title("learning_rate="+str(learning_rate[j]))
+    plt.title("learning_rate=" + str(learning_rate[j]))
     line1, = plt.plot(paras[to_tuning], train_auc, 'b', label='Train AUC')
     line2, = plt.plot(paras[to_tuning], test_auc, 'r', label='Test AUC')
     plt.legend(handler_map={line1: HandlerLine2D(numpoints=2)})
