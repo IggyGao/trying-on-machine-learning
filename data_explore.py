@@ -56,7 +56,9 @@ for i in index:
 
 # 考虑之后，采用：删除RevolvingUtilizationOfUnsecuredLines 异常值，替换replaced 98s
 best_data = df.copy()
-best_data.loc[best_data['DebtRatio'] >= 2382, 'DebtRatio'] = 2382
+best_data = best_data.drop(best_data[best_data['DebtRatio'] > 2382].index)
+
+# best_data.loc[best_data['DebtRatio'] >= 2382, 'DebtRatio'] = 2382
 
 best_data.loc[best_data['NumberOfTime30-59DaysPastDueNotWorse'] > 90, 'NumberOfTime30-59DaysPastDueNotWorse'] = 18
 best_data.loc[best_data['NumberOfTime60-89DaysPastDueNotWorse'] > 90, 'NumberOfTime60-89DaysPastDueNotWorse'] = 18

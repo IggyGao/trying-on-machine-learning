@@ -12,7 +12,6 @@
    
    MonthlyIncome有19.82%的缺失，通过计算其IV（0.07），决定删除此维度。
    
-   
    - 离群点的处理
    
    综合分析各维度的分布情况，找出可能的异常值，使用不同的处理方式（删除/替换）生成6种数据集。
@@ -29,6 +28,8 @@ a. 调参
 | Bagging/Boosting相关参数|n_estimators<br>max_features|n_estimators和learning_rate<br>subsample<br>loss|
 | 学习器相关参数|max_depth<br>min_sample_leaf<br>min_samples_split|同RF|
 
+b. 思考与结论
+
 RF核心思想：fully grown trees（低bias高variance） + Bagging （降低variance）。
 
 GBDT核心思想：shallow trees（高bias低variance） + Boosting （降低bias）
@@ -38,7 +39,7 @@ GBDT核心思想：shallow trees（高bias低variance） + Boosting （降低bia
 
 如果抗噪能力比较弱，RF应该调节Bagging参数，GBDT应该调节学习器相关参数。
 
-b. 模型建的对比 
+b. 模型间的对比 
     
    - 抗噪能力：RF > GBDT
    - 速度: 训练速度RF > GBDT; 分类速度DBDT>RF
@@ -54,6 +55,8 @@ b. 模型建的对比
 
 #### 4. 延伸思考
 
+关于模型评估方式（AUC-ROC）的一些疑问和思考，见文章最后
+
 #### 5. 文件列表
 
     comparator.py  ------------ 对比器，用于生成各模型/数据集的ROC列表和调参对比图
@@ -68,7 +71,7 @@ b. 模型建的对比
 
 #### 1. 数据描述
 
-   共11维数据，describe看一下大致情况。加分析。
+   共11维数据，describe看一下大致情况。加以分析。
 
 |           |  SeriousDlqin2yrs | Revolving<br>Utilization<br>OfUnsecuredLines  |age | NumberOfTime<br>30-59Days<br>PastDueNotWorse    |  DebtRatio | MonthlyIncome | NumberOfOpen<br>CreditLines<br>AndLoans|NumberOfTimes<br>90DaysLate  |NumberRealEstate<br>LoansOrLines|NumberOfTime<br>60-89Days<br>PastDueNotWorse | NumberOfDependents  |
 | ------ | ------ | ------ | ----- | ---------| -----------|------|-------|------|--------|----|-----|
@@ -181,29 +184,50 @@ c. DebtRatio 和 MonthlyIncome
 "utilization outliers removed"这四个数据集的表现优于仅仅处理空值的"missing data processed"。
 考虑采用其对应的处理方式生成最佳训练集，并使用此数据集进行接下来的调参探索。最佳训练集的训练结果如下，确实优于其他所有数据集，可以佐证此处理方式的合理性：
 
-    ('RF', 'best_data') --> AUC: 0.8647 (+/- 0.0061)
+    ('RF', 'best_data') --> AUC: 0.8647 (+/- 0.0041)
 
 
 ### 二、模型探索
 
 1. RF调参 
 
-    RF调参的思路是
+    RF调参比较简单，因为参数之间的相互影响比较小，可以直接对单一参数进行网格搜索。主要有以下三个层面的参数需要调节：
 
-    - n_estimators
-    - max_features
-    - max_depth、min_sample_leaf、min_samples_split
+    - n_estimators：对训练时间的影响最大，与时间基本呈线性关系。
+    
+    - max_features：'auto', 'sqrt', 'log'差距极小。 猜测是因为本数据集维度比较低（10），所以直接使用'auto'即可。
+    
+    - max_depth、min_sample_leaf、min_samples_split：体现了单棵树停止生长的条件，三者的作用都是防止过拟合。
+    其中max_depth效果最显著，调起来最方便。如果在max_depth选择了最佳值之后，仍然需要提高正确率，可以略略放大max_depth，再对min_sample_leaf、min_samples_split用于精细调节。
+    
+    调参顺序：
+    
+    max_depth -> n_estimators -> min_sample_leaf或min_samples_split
+    
+    首先调节max_depth，见下图。max_depth达到8的时候，AUC基本达到最大值。在8-30之间测试集AUC还在上升，而验证集已经不再上升，
+    显然此时存在过拟合。
+    
+    ![rf_max_depth](https://github.com/IggyGao/trying-on-machine-learning/blob/master/pictures/rf_tuning_depth(split=500).png?raw=true)
+    
+    接着调节n_estimators，见下图。n_estimators达到64的时候，AUC基本达到最大值。n_estimate与训练耗时基本呈正比。
+
+    ![rf_n_estimate](https://github.com/IggyGao/trying-on-machine-learning/blob/master/pictures/rf_tuning_n_estimate.png?raw=true)
+    
+    最后放大max_depth至14，对min_samples_leaf进行网格搜索。可以看到在曲线的前半段(<100)时，曲线是上升的，即过拟合得到了一定的抑制。
+    
+    ![rf_min_samples_leaf](https://github.com/IggyGao/trying-on-machine-learning/blob/master/pictures/rf_tuning_leaf(depth=16).png?raw=true)
+
     
 2. GBDT调参
 
     GBDT调参的思路是基学习器参数 -> Boosting参数 -> 其他参数。基学习器参数。
     
-    具体到参数上即为max_depth+min_samples_split -> _estimators+learning_rate -> subsample -> loss
+    具体到参数上即为max_depth + min_samples_split -> _estimators + learning_rate -> subsample -> loss
 
 
    - n_estimators和learning_rate
     
-    GBDT的调参相对来说比较复杂，因为n_estimators和learning_rate需要一起调节。查阅资料learning_rate一般在0.1-0.3范围内，小于0.1亦可，单不要过大。于是选择0.01~0.35范围内，配合不同的n_estimators进行粗调。代码及折线图如下。
+   GBDT的调参相对来说比较复杂，因为n_estimators和learning_rate需要一起调节。查阅资料learning_rate一般在0.1-0.3范围内，小于0.1亦可，单不要过大。于是选择0.01~0.35范围内，配合不同的n_estimators进行粗调。代码及折线图如下。
     
     
     #粗调
