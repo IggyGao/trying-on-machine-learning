@@ -221,7 +221,7 @@ RF调参比较简单，因为参数之间的相互影响比较小，可以直接
     
    接着调节n_estimators，见下图。n_estimators达到64的时候，AUC基本达到最大值。n_estimate与训练耗时基本呈正比。
 
-   <img src="https://github.com/IggyGao/trying-on-machine-learning/blob/master/pictures/rf_tuning_n_estimate.png?raw=true" width="80%" height="45%">
+   <img src="https://github.com/IggyGao/trying-on-machine-learning/blob/master/pictures/rf_tuning_n_estimate.png?raw=true" width="80%" height="40%">
    
    <br />
     
