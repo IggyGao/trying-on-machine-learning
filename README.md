@@ -282,7 +282,7 @@ RF调参比较简单，因为参数之间的相互影响比较小，可以直接
    参考模型计算出的importance，选择在RevolvingUtilizationOfUnsecuredLines这个比较重要的维度上引入噪声。
     随机抽取5%的样本，修改这个维度的值。
     
-   - 首先比较调参前后的GBDT。相比调参前，调参后AUC-ROC下降程度很小，可见上文的调参工作确实起到了抗噪声的作用。
+   首先比较调参前后的GBDT。相比调参前，调参后AUC-ROC下降程度很小，可见上文的调参工作确实起到了抗噪声的作用。
     
     
      --- Sorted Results ---
@@ -292,7 +292,7 @@ RF调参比较简单，因为参数之间的相互影响比较小，可以直接
     ('default GBDT', 'outliers added') --> AUC: 0.8576 (+/- 0.0076)
     
     
-   - 然后比较调参后的RF和GBDT。RF的AUC-ROC下降程度小于GBDT，可见RF的抗噪声能力更强。
+   然后比较调参后的RF和GBDT。RF的AUC-ROC下降程度小于GBDT，可见RF的抗噪声能力更强。
     
     
      --- Sorted Results ---
