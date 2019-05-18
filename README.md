@@ -275,14 +275,14 @@ RF调参比较简单，因为参数之间的相互影响比较小，可以直接
    <img src="https://github.com/IggyGao/trying-on-machine-learning/blob/master/pictures/gbdt_tuning_subsample.png?raw=true" width="60%" >
   
     
-3. 模型对比
+#### 3. 模型对比
 
-    **a. 制造噪声，对比抗噪能力**
+   **a. 制造噪声，对比抗噪能力**
     
-    参考模型计算出的importance，选择在RevolvingUtilizationOfUnsecuredLines这个比较重要的维度上引入噪声。
+   参考模型计算出的importance，选择在RevolvingUtilizationOfUnsecuredLines这个比较重要的维度上引入噪声。
     随机抽取5%的样本，修改这个维度的值。
     
-    - 首先比较调参前后的GBDT。相比调参前，调参后AUC-ROC下降程度很小，可见上文的调参工作确实起到了抗噪声的作用。
+   - 首先比较调参前后的GBDT。相比调参前，调参后AUC-ROC下降程度很小，可见上文的调参工作确实起到了抗噪声的作用。
     
     
      --- Sorted Results ---
