@@ -40,14 +40,15 @@ class Comparator():
             sample = self.datasets[df_name]
         else:
             sample = self.datasets[df_name].sample(sample_len)
-
-        X = sample.drop([self.target, 'Unnamed: 0'], axis=1)
-        # X = sample.drop([self.target], axis=1)
+        if 'Unnamed: 0' in sample.columns:
+            X = sample.drop([self.target, 'Unnamed: 0'], axis=1)
+        else:
+            X = sample.drop([self.target], axis=1)
         Y = sample[self.target]
 
         s = cross_validate(clf, X, Y, scoring=['roc_auc'], cv=cv, n_jobs=-1)
 
-        # clf.fit(X, Y)
+        # clf.fit(X, Y)555555555
         # importances = clf.feature_importances_
         # indices = np.argsort(importances)[::-1]
         # for f in range(X.shape[1]):
@@ -72,7 +73,7 @@ class Comparator():
                 time_spent.append(end - start)
                 # print(' -- %0.2fs ' % (end - start))
 
-        print('--- Top 10 Results ---')
+        print('--- Sorted Results ---')
         for score in sorted(scores.items(), key=lambda x: -1 * x[1]['test_roc_auc'].mean())[::]:
             auc = score[1]['test_roc_auc']
             print("%s --> AUC: %0.4f (+/- %0.4f)" % (str(score[0]), auc.mean(), auc.std()))

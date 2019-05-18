@@ -6,9 +6,17 @@
 
 #### 1. 数据探索：
     
-    
-   主要是离群点的处理方式。
-   找出可能的异常值，分析情况，对应不同处理方式（删除/替换）生成多种数据集。使用粗略调参的模型分别训练数据集，对比评估，从而选出合适的数据处理方式，用于接下来的模型训练。
+   - 空值的处理
+   
+   NumberOfDependents空值比例极小（2.62%），直接删除此列为空的样本。
+   
+   MonthlyIncome有19.82%的缺失，通过计算其IV（0.07），决定删除此维度。
+   
+   
+   - 离群点的处理
+   
+   综合分析各维度的分布情况，找出可能的异常值，使用不同的处理方式（删除/替换）生成6种数据集。
+   使用粗略调参的模型分别训练数据集，对比评估选出了3种较为合适的处理方式，综合后生成最优数据集，用于接下来的模型训练。
 
 #### 2. 模型训练和对比分析
 
@@ -24,8 +32,6 @@ a. 调参
 RF核心思想：fully grown trees（低bias高variance） + Bagging （降低variance）。
 
 GBDT核心思想：shallow trees（高bias低variance） + Boosting （降低bias）
-
-
 
 
 所以如果分类偏差较大，RF应该调节学习器相关参数，GBDT应该调节Boosting相关参数；
@@ -78,7 +84,7 @@ b. 模型建的对比
 
 #### 2. 空值
 
-|  列名     |缺失值占比|
+|  列名     |缺失值占比（%）|
 | ------ | ------ | 
 |SeriousDlqin2yrs                        |0.000000
 |RevolvingUtilizationOfUnsecuredLines     |0.000000
@@ -120,14 +126,14 @@ IV =  0.07039407793853665
 
 a. 逾期数据
 
-结合describe的结果，发现三个逾期数据（NumberOfTime30-59DaysPastDueNotWorse、NumberOfTime60-89DaysPastDueNotWorse、NumberOfTimes90DaysLate）具有非常类似的分布（在18~95之间都出现了巨大的gap，又有近300个样本出现在96~98之间），可以一起考量。分别采用删除/替换为18/替换为中位数三种方法，生成数据集1，2，3。
+结合describe的结果，发现三个逾期数据（NumberOfTime30-59DaysPastDueNotWorse、NumberOfTime60-89DaysPastDueNotWorse、NumberOfTimes90DaysLate）
+具有非常类似的分布（在18~95之间都出现了巨大的gap，又有近300个样本出现在96~98之间），可以一起考量。分别采用删除/替换为18两种方法，生成数据集"overdue outliers replaced"和"overdue outliers removed"。
 
 b. RevolvingUtilizationOfUnsecuredLines
 
-此数据表示已贷金额和贷款额度的比值，远远大于1的数据不太正常。取1的十倍划线，删除异常值，生成数据集xx。
+此数据表示已贷金额和贷款额度的比值，远远大于1的数据不太正常。取1的十倍划线，删除异常值，生成数据集"utilization outliers removed"。
 
-
-|  |Revolving<br>UtilizationOf<br>UnsecuredLines | SeriousDlqin2yrs
+<!--|  |Revolving<br>UtilizationOf<br>UnsecuredLines | SeriousDlqin2yrs
 | ------ | ------ | -------|
 |count              |             3321.000000   |    3321.000000
 |mean               |              259.773362   |       0.372478
@@ -136,35 +142,47 @@ b. RevolvingUtilizationOfUnsecuredLines
 |25%                  |              1.019996    |      0.000000
 |50%                  |              1.074633    |      0.000000
 |75%                  |              1.301096    |      1.000000
-|max                  |          50708.000000     |     1.000000
+|max                  |          50708.000000     |     1.000000-->
 
 c. DebtRatio 和 MonthlyIncome
 
-处理MonthlyIncome时发现，删除MonthlyIncome为空的数据前后，SeriousDlqin2yrs的均值发生了剧烈的变化（删除前是删除后的两倍）。可以认为
+处理MonthlyIncome时发现，删除MonthlyIncome为空的数据前后，SeriousDlqin2yrs的均值发生了剧烈的变化（删除前是删除后的两倍）。
+可见DebtRatio离群点和MonthlyIncome为空的样本存在大量重叠，对此类数据的真实度产生怀疑。选取95分位点打印信息如下：
 
-| |SeriousDlqin2yrs|	MonthlyIncome|
+ |          |DebtRatio | MonthlyIncome
 | ------ | ------ | -------|
-|count	3750.000000	|185.000000|
-|mean|	0.064267	|0.064865|
-|std	|0.245260|	0.246956|
-|min	|0.000000	|0.000000|
-|25%	|0.000000	|0.000000|
-|50%	|0.000000	|0.000000|
-|75%	|0.000000	|0.000000|
-|max	|1.000000	|1.000000|
+|count    |7836.000000     |399.000000
+|mean     |4330.529862       |0.087719
+|std      |7712.385814       |0.283241
+|min      |2382.000000       |0.000000
+|25%      |2824.000000       |0.000000
+|50%      |3424.500000       |0.000000
+|75%      |4535.000000       |0.000000
+|max    |329664.000000       |1.000000
 
-将MonthlyIncome<=1或SeriousDlqin2yrs>=500的值全部替换为中位数各自的中位数，生成数据集XXXX
+
+将DebtRatio>=2382的值全部替换为2382，生成数据集"debt ratio outliers replaced"
+
+将DebtRatio>=2382的样本删除，生成数据集"debt ratio outliers removed"
 
 3. 引入模型评估
 
-将上一步中生成的数据集分别使用RF、GBDT训练。结果如下：
+将上一步中生成的数据集分别使用粗略调参的RF进行严重。结果如下：
 
+     --- Sorted Results ---
+    ('RF', 'debt ratio outliers removed') --> AUC: 0.8606 (+/- 0.0045)
+    ('RF', 'debt ratio outliers replaced') --> AUC: 0.8601 (+/- 0.0052)
+    ('RF', 'overdue outliers removed') --> AUC: 0.8598 (+/- 0.0074)
+    ('RF', 'utilization outliers removed') --> AUC: 0.8592 (+/- 0.0036)
+    ('RF', 'missing data processed') --> AUC: 0.8576 (+/- 0.0018)
+    ('RF', 'overdue outliers replaced') --> AUC: 0.8576 (+/- 0.0050)
 
-可见，
+可见，"debt ratio outliers replaced"、"debt ratio outliers removed"、"overdue outliers removed"、
+"utilization outliers removed"这四个数据集的表现优于仅仅处理空值的"missing data processed"。
+考虑采用其对应的处理方式生成最佳训练集，并使用此数据集进行接下来的调参探索。最佳训练集的训练结果如下，确实优于其他所有数据集，可以佐证此处理方式的合理性：
 
-- 评估处理方法
-- 评估数据质量
-- 评估importance
+    ('RF', 'best_data') --> AUC: 0.8647 (+/- 0.0061)
+
 
 ### 二、模型探索
 
