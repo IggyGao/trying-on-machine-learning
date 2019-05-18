@@ -61,7 +61,7 @@ GBDT因为超参数的存在，网格搜索比较复杂，更应该遵循先粗�
 
 使用对应模型对测试集进行分类，生成submission.csv提交，网站评分如下图（最高分为0.8695）
 
-<img src="https://github.com/IggyGao/trying-on-machine-learning/blob/master/pictures/my_score.jpg?raw=true" width="65%" >
+<img src="https://github.com/IggyGao/trying-on-machine-learning/blob/master/pictures/my_score.jpg?raw=true" width="75%" >
 
 #### 4. 文件列表
 
@@ -285,7 +285,7 @@ RF调参比较简单，因为参数之间的相互影响比较小，可以直接
     - 首先比较调参前后的GBDT。相比调参前，调参后AUC-ROC下降程度很小，可见上文的调参工作确实起到了抗噪声的作用。
     
     
-    --- Sorted Results ---
+     --- Sorted Results ---
     ('tuned GBDT', 'data') --> AUC: 0.8628 (+/- 0.0045)
     ('tuned GBDT', 'outliers added') --> AUC: 0.8627 (+/- 0.0029)
     ('default GBDT', 'data') --> AUC: 0.8623 (+/- 0.0025)
@@ -295,7 +295,7 @@ RF调参比较简单，因为参数之间的相互影响比较小，可以直接
    - 然后比较调参后的RF和GBDT。RF的AUC-ROC下降程度小于GBDT，可见RF的抗噪声能力更强。
     
     
-    --- Sorted Results ---
+     --- Sorted Results ---
     ('tuned GBDT', 'data') --> AUC: 0.8640 (+/- 0.0020)
     ('tuned RF', 'data') --> AUC: 0.8634 (+/- 0.0009)
     ('tuned RF', 'outliers data') --> AUC: 0.8627 (+/- 0.0085)
@@ -303,7 +303,7 @@ RF调参比较简单，因为参数之间的相互影响比较小，可以直接
     
    **b. 对比训练/分类速度**
    
-    --- Time Spent ---
+     --- Time Spent ---
     RF train costs -- 14.72s 
     RF test costs -- 1.01s 
     GBDT train costs -- 90.18s 
