@@ -1,7 +1,7 @@
 # trying-on-machine-learning
 
 ## 综述：
-尝试探索kaggle网站上信用卡用户分类的competition([详情链接](https://www.kaggle.com/c/GiveMeSomeCredit/overview))，进行数据探索-数据清洗-模型训练-模型评估等一系列操作，内容主要包括：
+尝试探索kaggle网站上信用卡用户分类的competition([详情链接](https://www.kaggle.com/c/GiveMeSomeCredit/overview))，进行数据探索->数据清洗->模型训练->模型评估等一系列操作，内容主要包括：
 
 
 ### 1. 数据探索：
@@ -21,29 +21,21 @@
 
 2.1 调参
 
-分别对RF和GBDT进行调参，寻找最佳模型，对比两种模型，并总结调参过程中的收获和思考。主要涉及参数如下：
-
-| | RF参数 | GBDT参数 | 
-|-------| ------ | ------ | 
-| 集成关参数|n_estimators<br>max_features|n_estimators和learning_rate<br>subsample<br>loss|
-| 学习器参数|max_depth<br>min_sample_leaf<br>min_samples_split|同RF|
-|其他参数|criterion|subsample<br>loss|
-
- **思考与结论**
+分别对RF和GBDT进行调参，寻找最佳模型，并进行对比。总结调参过程中的收获和思考如下：
 
 RF核心思想是fully grown tree（低bias高variance）+ Bagging （降低variance），而GBDT核心思想是shallow tree（高bias低variance）+ Boosting （降低bias）
 
-调参的核心是要找到bias和variance平衡的那个点，就是在提高train_auc的同时，尽量保证test_auc的跟随性，
-最终将参数固定在极值点附近，也就是跟随性的转折点。
+调参的最终目的是要找到bias和variance平衡的那个点，就是在提高train_auc的同时，尽量保证test_auc的跟随性，
+最终将参数固定在极值点附近，也就是过拟合的临界点附近。
 
-调参过程中发现了一些比较重要的思路
+从大的方面来说，我在调参过程中发现了一些比较重要的思路
 
-- 先调学习器参数，再调集成参数
+**- 先调学习器参数，再调集成参数**
 
 调参的顺序非常重要。个人认为可以先调节学习器参数，因为集成参数可以参照经验，暂且设置得富裕一些（例如先将n_estimators设置得大一些，learning_rate设置得小一些），
 这样会加大训练的时间，但不会过分影响模型的性能。将学习器参数调节得差不多之后，再去调节集成参数。
 
-- 先粗调再细调
+**- 先粗调再细调**
 
 比如RF中的max_depth和min_samples_split/min_samples_leaf都是用来防止过拟合的。比较而言，max_depth的控制粒度比较粗，但是好调；后二者粒度细，但是很难把握。
 要像尽量达到较好的正确率，应该尽量通过后两者去约束树停止生长的条件。但是直接调节后两者比较难。
@@ -210,6 +202,14 @@ MonthlyIncome有接近20%的缺失，缺失量很大，可以考虑用中位数/
 
 
 ### 二、模型探索
+
+主要涉及参数如下：
+
+| | RF参数 | GBDT参数 | 
+|-------| ------ | ------ | 
+| 集成关参数|n_estimators<br>max_features|n_estimators和learning_rate<br>subsample<br>loss|
+| 学习器参数|max_depth<br>min_sample_leaf<br>min_samples_split|同RF|
+|其他参数|criterion|subsample<br>loss|
 
 #### 1. RF调参 
 
