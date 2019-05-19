@@ -38,7 +38,7 @@ RF核心思想是fully grown tree（低bias高variance）+ Bagging （降低vari
 
 调参过程中发现了一些比较重要的思路
 
-- 调参顺序：
+- 找到合适的调参顺序：
 
 个人认为应该先调学习器参数，因为集成参数可以参照经验，先设置得富裕一些（例如先将n_estimators设置得大一些，learning_rate设置得小一些），
 这样会加大训练的时间，但不会过分影响模型的性能。将学习器参数调节得差不多之后，再去调节集成参数。
@@ -59,7 +59,6 @@ GBDT因为超参数的存在，网格搜索比较复杂，更应该遵循先粗�
    - 准确度：对competition提供的预测样本进行分类并上传，评估分类准确度。GBDT 整体略好
    - 调参: RF的调参更为简单
    
-   <br/>
 
 ### 3. 结果：
 
@@ -121,7 +120,7 @@ NumberOfDependents占比极其小，直接删除。
 
 MonthlyIncome有接近20%的缺失，缺失量很大，可以考虑用中位数/平均值填充 或 直接删除此列数据。
 
-为了确定处理方法，选择合适的分组，编写代码计算IV，结果见下图。最终IV = 0.07，说明MonthlyIncome与分类结果的关联性比较低，决定直接删除此维度的数据
+为了确定处理方法，选择合适的分组，编写代码计算IV，结果见下图。最终IV = 0.07039，说明MonthlyIncome与分类结果的关联性比较低，决定直接删除此维度的数据
 
  |Value  |     sample rate   | Distribution Good | Distribution Bad |      Sub     |  WoE   |     IV|
  | ------ | ------|------ | ------|-------|----------|-------|
@@ -135,7 +134,6 @@ MonthlyIncome有接近20%的缺失，缺失量很大，可以考虑用中位数/
 |   9000-12000      |     0.11|0.094117         | 0.061839 |0.032278  |0.420006  |0.013557
 |  12000以上      |    0.09| 0.077014         | 0.050768 |0.026246  |0.416725  |0.010937
 
-IV =  0.07039407793853665
 
 #### 2. 离群点
 
@@ -224,21 +222,30 @@ RF调参比较简单，因为参数之间的相互影响比较小，可以直接
     
    max_depth -> n_estimators -> min_sample_leaf或min_samples_split
     
-   首先调节max_depth，见下图。max_depth达到8的时候，AUC基本达到最大值。在8-30之间测试集AUC还在上升，而验证集已经不再上升，
+   **- max_depth**
+   
+   对max_depth进行网格搜索，见下图。max_depth达到8的时候，AUC基本达到最大值。在8-30之间测试集AUC还在上升，而验证集已经不再上升，
    显然此时存在过拟合。
     
    <img src="https://github.com/IggyGao/trying-on-machine-learning/blob/master/pictures/rf_tuning_depth(split=500).png?raw=true" width="50%">
    
    <br />
     
-   接着调节n_estimators，见下图。n_estimators达到64的时候，AUC基本达到最大值。n_estimate与训练耗时基本呈正比。
+   **- n_estimators**
+   
+   n_estimators的网格搜索结果见下图。n_estimators达到64的时候，AUC基本达到最大值。同时注意到n_estimate与训练耗时基本呈正比。
 
    <img src="https://github.com/IggyGao/trying-on-machine-learning/blob/master/pictures/rf_tuning_n_estimate.png?raw=true" width="80%" height="30%">
    
    <br />
     
-   最后放大max_depth至14，对min_samples_leaf进行网格搜索。可以看到极值点出现在100附近，即min_samples_leaf<100时出现了过拟合。此极值点处的AUC大于max_depth调节之后的AUC，
+    
+   **- min_samples_leaf**
+    
+   放大max_depth至14，对min_samples_leaf进行网格搜索。可以看到极值点出现在100附近，即min_samples_leaf<100时出现了过拟合。此极值点处的AUC大于max_depth调节之后的AUC，
    可见此操作成功延迟了过拟合的出现，提高了AUC。
+   
+   **注意：一般min_samples_leaf的取值应该在0.5%-1%之间，但是此数据集存在非常严重的unbalanced现象，所以min_samples_leaf偏小。**
        
    <img src="https://github.com/IggyGao/trying-on-machine-learning/blob/master/pictures/rf_tuning_leaf(depth=16).png?raw=true" width="50%" >
 
@@ -256,7 +263,7 @@ RF调参比较简单，因为参数之间的相互影响比较小，可以直接
    原因是GBDT并不要求每一棵树的预估结果都很准确，反正可以通过不断减少残差去接近正确结果，提高每一棵树的抗噪能力更加重要。
    
    
-   - n_estimators + learning_rate
+   **- n_estimators + learning_rate**
    
    调参的主要难度在n_estimators和learning_rate这一步，因为这两个参数需要一起调节。
    
@@ -283,7 +290,7 @@ RF调参比较简单，因为参数之间的相互影响比较小，可以直接
 
 
 
-   - subsample
+   **- subsample**
    
    在(0.5, 1)之间步进搜索，AUC折线图如下。整体而言subsamples的取值对结果的影响不大，test_auc对train_auc一直有比较好的跟随性。
    猜测是因为离群点滤得比较干净，之前的防过拟合参数也比较合适。最终选取 subsample=0.85。
