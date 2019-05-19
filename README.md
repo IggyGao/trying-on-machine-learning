@@ -8,9 +8,9 @@
     
    - 空值的处理
    
-   NumberOfDependents空值比例极小（2.62%），直接删除此列为空的样本。
+   特征NumberOfDependents空值比例极小（2.62%），直接删除此列为空的样本。
    
-   MonthlyIncome有19.82%的缺失，通过计算其IV（0.07），决定删除此维度。
+   特征MonthlyIncome有19.82%的缺失，通过计算其IV（0.07），决定删除此特征。
    
    - 离群点的处理
    
@@ -29,20 +29,20 @@
 | 学习器参数|max_depth<br>min_sample_leaf<br>min_samples_split|同RF|
 |其他参数|criterion|subsample<br>loss|
 
-思考与结论：
+**思考与结论：**
 
-RF核心思想是fully grown trees（低bias高variance）+ Bagging （降低variance），而GBDT核心思想是shallow trees（高bias低variance）+ Boosting （降低bias）
+RF核心思想是fully grown tree（低bias高variance）+ Bagging （降低variance），而GBDT核心思想是shallow tree（高bias低variance）+ Boosting （降低bias）
 
 调参的核心是要找到bias和variance平衡的那个点，就是在提高train_auc的同时，尽量保证test_auc的跟随性，
 最终将参数固定在极值点附近，也就是跟随性的转折点。
 
 个人认为应该先调学习器参数，因为集成参数可以参照经验，先设置得富裕一些（例如先将n_estimators设置得大一些，learning_rate设置得小一些），
-这样只是会加大训练的时间，而不会过分影响模型的性能。将学习器参数调节得差不多之后，再去调节集成参数。
+这样会加大训练的时间，但不会过分影响模型的性能。将学习器参数调节得差不多之后，再去调节集成参数。
 
 另一个思想是先粗调再细调。
 
-比如RF中的max_depth和min_samples_split都是用来防止过拟合的，max_depth的控制粒度比较粗，但是好调，min_samples_split粒度细，但是很难把握。
-于是我才去的方法是先找到max_depth的极值点，再稍稍提高max_depth，用min_samples_split进行更细粒度的控制，将bias和variance的平衡点尽量往上推。
+比如RF中的max_depth和min_samples_split/min_samples_leaf都是用来防止过拟合的。比较而言，max_depth的控制粒度比较粗，但是好调；后二者粒度细，但是很难把握。
+于是我采取的方法是先找到max_depth的极值点，再稍稍提高max_depth，用min_samples_split进行更细粒度的控制，将bias和variance的平衡点尽量往上推。
 
 GBDT因为超参数的存在，网格搜索比较复杂，更应该遵循先粗调再细调的思路。
 
@@ -59,25 +59,26 @@ GBDT因为超参数的存在，网格搜索比较复杂，更应该遵循先粗�
 
 将测试数据分测试集和验证集，交叉验证算出AUC-ROC的平均值，验证集大致在0.864左右，GBDT略好于RF。
 
-使用对应模型对测试集进行分类，生成submission.csv提交，网站评分如下图（最高分为0.8695）
+使用对应模型对测试集进行分类，将分类结果提交，网站评分如下图（competition第一名为0.8695）
 
 <img src="https://github.com/IggyGao/trying-on-machine-learning/blob/master/pictures/my_score.jpg?raw=true" width="75%" >
 
 #### 4. 文件列表
 
-    comparator.py  ------------ 对比器，用于生成各模型/数据集的ROC列表和调参对比图
-    data_explore.py  ---------- 数据清洗
+    comparator.py  ------------ 对比器，用于生成各模型/数据集的ROC列表、对比图
+    data_explore.py  ---------- 数据处理
     rf_tuning.py  ------------- 随机森林调参 
     gbdt_tuning.py  ----------- GBDT调参  
     iv_calculator.py ---------- IV计算器
+    gbdt_vs_rf ---------------- 调参后模型对比脚本
    
 ## 具体处理和数据支撑
 
 ### 一、数据探索
 
-<!--#### 1. 数据描述
+   共11维数据，150000个样本。通过describe函数查看大致情况，并加以分析。主要处理如下。
 
-   共11维数据，describe看一下大致情况。加以分析。
+<!--#### 1. 数据描述
 
 |           |  SeriousDlqin2yrs | Revolving<br>Utilization<br>OfUnsecuredLines  |age | NumberOfTime<br>30-59Days<br>PastDueNotWorse    |  DebtRatio | MonthlyIncome | NumberOfOpen<br>CreditLines<br>AndLoans|NumberOfTimes<br>90DaysLate  |NumberRealEstate<br>LoansOrLines|NumberOfTime<br>60-89Days<br>PastDueNotWorse | NumberOfDependents  |
 | ------ | ------ | ------ | ----- | ---------| -----------|------|-------|------|--------|----|-----|
@@ -135,8 +136,8 @@ IV =  0.07039407793853665
 
 **a. DebtRatio 和 MonthlyIncome**
 
-处理MonthlyIncome时发现，删除MonthlyIncome为空的数据前后，SeriousDlqin2yrs的均值发生了剧烈的变化（删除前是删除后的两倍）。
-可见DebtRatio离群点和MonthlyIncome为空的样本存在大量重叠，对此类数据的真实度产生怀疑。选取95分位点打印信息如下：
+处理MonthlyIncome时发现，删除MonthlyIncome为空的数据前后，DebtRatio的均值发生了剧烈的变化（删除前是删除后的两倍）。
+猜测DebtRatio离群点和MonthlyIncome为空的样本存在大量重叠，对此类数据的真实度产生怀疑。选取95分位点打印信息如下：
 
  |          |DebtRatio | MonthlyIncome
 | ------ | ------ | -------|
@@ -149,6 +150,7 @@ IV =  0.07039407793853665
 |75%      |4535.000000       |0.000000
 |max    |329664.000000       |1.000000
 
+
 将DebtRatio>=2382的值全部替换为2382，生成数据集"debt ratio outliers replaced"
 
 将DebtRatio>=2382的样本删除，生成数据集"debt ratio outliers removed"
@@ -157,7 +159,9 @@ IV =  0.07039407793853665
 **b. 逾期数据**
 
 结合describe的结果，发现三个逾期数据（NumberOfTime30-59DaysPastDueNotWorse、NumberOfTime60-89DaysPastDueNotWorse、NumberOfTimes90DaysLate）
-具有非常类似的分布（在18~95之间都出现了巨大的gap，又有近300个样本出现在96~98之间），可以一起考量。分别采用删除/替换为18两种方法，生成数据集"overdue outliers replaced"和"overdue outliers removed"。
+具有非常类似的分布（在18至95之间都出现了巨大的gap，又有近300个样本出现在96至98之间），可以一起考量。
+
+分别采用删除/替换为18两种方法，生成数据集"overdue outliers replaced"和"overdue outliers removed"。
 
 **c. RevolvingUtilizationOfUnsecuredLines**
 
@@ -189,7 +193,8 @@ IV =  0.07039407793853665
     ('RF', 'overdue outliers replaced') --> AUC: 0.8576 (+/- 0.0050)
 
 可见，"debt ratio outliers replaced"、"debt ratio outliers removed"、"overdue outliers removed"、
-"utilization outliers removed"这四个数据集的表现优于仅仅处理空值的"missing data processed"。
+"utilization outliers removed"这四个数据集的表现优于仅处理空值的"missing data processed"。
+
 考虑采用其对应的处理方式生成最佳训练集，并使用此数据集进行接下来的调参探索。最佳训练集的训练结果如下，确实优于其他所有数据集，可以佐证此处理方式的合理性：
 
     ('RF', 'best_data') --> AUC: 0.8647 (+/- 0.0041)
@@ -202,9 +207,7 @@ IV =  0.07039407793853665
 RF调参比较简单，因为参数之间的相互影响比较小，可以直接对单一参数进行网格搜索。主要有以下三个层面的参数需要调节：
 
    - n_estimators：对训练时间的影响最大，与时间基本呈线性关系。
-    
    - max_features：'auto', 'sqrt', 'log'差距极小。 猜测是因为本数据集维度比较低（10），所以直接使用'auto'即可。
-    
    - max_depth、min_sample_leaf、min_samples_split：体现了单棵树停止生长的条件，三者的作用都是防止过拟合。
     其中max_depth效果最显著，调起来最方便。如果在max_depth选择了最佳值之后，仍然需要提高正确率，可以略略放大max_depth，再对min_sample_leaf、min_samples_split用于精细调节。
     
@@ -225,15 +228,16 @@ RF调参比较简单，因为参数之间的相互影响比较小，可以直接
    
    <br />
     
-   最后放大max_depth至14，对min_samples_leaf进行网格搜索。可以看到在曲线的前半段(<100)时，曲线是上升的，即过拟合得到了一定的抑制。
+   最后放大max_depth至14，对min_samples_leaf进行网格搜索。可以看到极值点出现在100附近，即min_samples_leaf<100时出现了过拟合。此极值点处的AUC大于max_depth调节之后的AUC，
+   可见此操作成功延迟了过拟合的出现，提高了AUC。
        
    <img src="https://github.com/IggyGao/trying-on-machine-learning/blob/master/pictures/rf_tuning_leaf(depth=16).png?raw=true" width="50%" >
 
-   最终选择 n_estimators=100, max_depth=16, max_features='auto', min_samples_leaf=100 的组合
+   最终选择 n_estimators=100, max_depth=16, max_features='auto', min_samples_leaf=100 的组合作为RF的最佳参数。
 
 #### 2. GBDT调参
     
-   调参顺序：
+   **调参顺序：**
 
    max_depth —> min_samples_split/min_samples_leaf -> n_estimators + learning_rate -> subsample -> loss
 
@@ -241,6 +245,9 @@ RF调参比较简单，因为参数之间的相互影响比较小，可以直接
     
    前两步的调节的方法与RF基本一致。主要是注意相比RF，**max_depth要小，min_samples_split/min_samples_leaf要大一些**。
    原因是GBDT并不要求每一棵树的预估结果都很准确，反正可以通过不断减少残差去接近正确结果，提高每一棵树的抗噪能力更加重要。
+   
+   
+   - n_estimators + learning_rate
    
    调参的主要难度在n_estimators和learning_rate这一步，因为这两个参数需要一起调节。
    
@@ -257,7 +264,7 @@ RF调参比较简单，因为参数之间的相互影响比较小，可以直接
    learning_rate越大，需要的n_estimators就越小。但是随着learning_rate的增大，明显可以看到test_auc和train_auc之间的夹角越大，也就是测试集正确率跟随训练集的能力越低。此时出现了过拟合。
 
    上图可见较好的auc出现在0.05附近。减小learning_rate的步进长度，在0.03-0.1之间继续网格搜索，结果如下图。
-   可以看到当learning_rate>0.05后，test_auc的跟随性开始变差。
+   可以看到当learning_rate>0.05后，test_auc的跟随性开始变差。最终选择learning_rate=0.05，n_estimators=200。
 
     # 细调
     learning_rate = [0.03, 0.05, 0.08, 0.1, 0.13, 0.15]
@@ -289,7 +296,7 @@ RF调参比较简单，因为参数之间的相互影响比较小，可以直接
     ('tuned GBDT', 'data') --> AUC: 0.8628 (+/- 0.0045)
     ('tuned GBDT', 'outliers added') --> AUC: 0.8627 (+/- 0.0029)
     ('default GBDT', 'data') --> AUC: 0.8623 (+/- 0.0025)
-    ('default GBDT', 'outliers added') --> AUC: 0.8576 (+/- 0.0076)
+    ('default GBDT', 'outliers added') --> AUC: 0.8576 (+/- 0.0026)
     
     
    然后比较调参后的RF和GBDT。RF的AUC-ROC下降程度小于GBDT，可见RF的抗噪声能力更强。
@@ -298,7 +305,7 @@ RF调参比较简单，因为参数之间的相互影响比较小，可以直接
      --- Sorted Results ---
     ('tuned GBDT', 'data') --> AUC: 0.8640 (+/- 0.0020)
     ('tuned RF', 'data') --> AUC: 0.8634 (+/- 0.0009)
-    ('tuned RF', 'outliers data') --> AUC: 0.8627 (+/- 0.0085)
+    ('tuned RF', 'outliers data') --> AUC: 0.8627 (+/- 0.0045)
     ('tuned GBDT', 'outliers added') --> AUC: 0.8611 (+/- 0.0040)
     
    **b. 对比训练/分类速度**
@@ -311,17 +318,18 @@ RF调参比较简单，因为参数之间的相互影响比较小，可以直接
     
    可见GBDT的训练耗时远远大于RF，但是分类耗时相差不多。
    
-   GBDT的训练耗时大，是因为树的训练是串行的，并且一般会采用较小的learnning_rate防止在跃过最优解，所以叠加的树的规模也会大幅增加。
+   GBDT的训练耗时大，是因为GBDT中树的训练是串行的，并且一般会采用较小的learnning_rate防止跃过最优解，所以叠加的树的规模也会大幅增加。
    XGBoost在feature层面上采用了预排序，将训练速度提高了很多。
 
    **c. 调参对比**
    
-   对比上文的调参工作，因为hhyperparameters的存在，GBDT的调参难度远远大于RF。不过多处资料表明，如果调参得当，GBDT的分类结果会好于RF。本文也是如此。
+   对比上文的调参工作，因为hyperparameters的存在，GBDT的调参难度远远大于RF。不过多处资料表明，如果调参得当，GBDT的分类结果会好于RF。
     
    **d. 其他思考**
    
-   competition中默认的评分方式是AUC-ROC，但是实际上信用卡评分可能是一个比较unbalanced的数据集，使用AUC-ROC评估模型是不是会过于乐观。
-   而且考虑到模型评分可能是一个初筛手段，应该更关心P样本的预测正确率，选择AUC-PR来评估模型，也许会更为合适。
+   competition中默认的评分方式是AUC-ROC，但是实际上信用卡评分可能是一个比较unbalanced的数据集。如果实际情况中N样本的占比远大于训练集，
+   使用AUC-ROC的评估可能会过于乐观。而且考虑到模型评分可能是一个初筛手段，应该更关心P样本的预测正确率。
+   所以如果有时间的话，可以考虑使用AUC-PR来尝试评估模型，也许会更为合适。
 
 
 
