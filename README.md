@@ -21,9 +21,10 @@
 
 2.1 调参
 
-分别对RF和GBDT进行调参，寻找最佳模型，并进行对比。总结调参过程中的收获和思考如下：
+分别对RF和GBDT进行调参，寻找最佳模型，并进行对比。具体调参细节见文章第二部分，过程中的收获和思考如下：
 
-RF核心思想是fully grown tree（低bias高variance）+ Bagging （降低variance），而GBDT核心思想是shallow tree（高bias低variance）+ Boosting （降低bias）
+RF = fully grown tree（低bias高variance）+ Bagging （降低variance)
+GBDT = shallow tree（高bias低variance）+ Boosting （降低bias）
 
 调参的最终目的是要找到bias和variance平衡的那个点，就是在提高train_auc的同时，尽量保证test_auc的跟随性，
 最终将参数固定在极值点附近，也就是过拟合的临界点附近。
@@ -39,12 +40,11 @@ RF核心思想是fully grown tree（低bias高variance）+ Bagging （降低vari
 
 比如RF中的max_depth和min_samples_split/min_samples_leaf都是用来防止过拟合的。比较而言，max_depth的控制粒度比较粗，但是好调；后二者粒度细，但是很难把握。
 要像尽量达到较好的正确率，应该尽量通过后两者去约束树停止生长的条件。但是直接调节后两者比较难。
-
 于是我采取的方法是先找到max_depth的极值点，对模型有个大致的认知。再稍稍提高max_depth，用min_samples_split进行更细粒度的控制，将bias和variance的平衡点尽量往上推。
 
 GBDT因为超参数的存在，网格搜索比较复杂，更应该遵循先粗调再细调的思路。
 
-具体调参细节见文章第二部分。
+
 
 2.2 模型间的对比
     
@@ -343,11 +343,22 @@ RF调参比较简单，因为参数之间的相互影响比较小，可以直接
    
    对比上文的调参工作，因为hyperparameters的存在，GBDT的调参难度远远大于RF。不过多处资料表明，如果调参得当，GBDT的分类结果会好于RF。
     
-   **d. 其他思考**
+   **d. 可以继续探索的问题**
+   
+   - min_samples_split和min_samples_leaf
+   
+   之前已经描述并且证明了max_depth与这二者的关系。但是如果需要跟精细的调参，这二者之间又应该如何调节？个人猜测，
+   在N、P样本比较均衡的情况下，调节这两者中的任何一个都可以（min_samples_leaf = n 应该等价于 min_samples_split = 2n的情况）。
+   但是在非常不均衡的样本下，可能需要对二者进行更加精细的选择，比如缩小min_samples_split的值，以适应较小的P样本占比。
+   实际情况是不是符合猜测，合适的调节又会对分类正确率有多大的提高，还需要更多实验来验证。
+   
+   - 模型的评价方式
    
    competition中默认的评分方式是AUC-ROC，但是实际上信用卡评分可能是一个比较unbalanced的数据集。如果实际情况中N样本的占比远大于训练集，
    使用AUC-ROC的评估可能会过于乐观。而且考虑到模型评分可能是一个初筛手段，应该更关心P样本的预测正确率。
    所以如果有时间的话，可以考虑使用AUC-PR来尝试评估模型，也许会更为合适。
+   
+   
 
 
 
